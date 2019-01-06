@@ -37,12 +37,12 @@ class Param_STFT(U.NewParam):
 class STFT(U.NewModule):        
     #STFT module
     def __init__(self, param_STFT=None):   
-        self.setParam(param_STFT)        
-        self.clear()
+        self.setParam(param_STFT)
         self.update()
+        self.clear()
         
     def getParam(self):
-        return Param_STFT(frameSize = self._frameSize_, hopSize = self._hopSize_, fftshift = self._fftshift_, windowType = self._windowType_, zeroPadding = self._zeroPadding_)
+        return Param_STFT(frameSize=self._frameSize_, hopSize=self._hopSize_, fftshift=self._fftshift_, windowType=self._windowType_, zeroPadding=self._zeroPadding_)
         
     def getFrameSize(self):
         return self._frameSize_
