@@ -22,10 +22,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fftpack import ifft
 
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
 import STFT
 import OverlapAdd
-import utils as U
+#sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+from .. import utils as U
 
 class Param_ISTFT(STFT.Param_STFT):
     def __init__(self, frameSize=4096, hopSize=2048, fftshift=True, windowType='hann', zeroPadding=0):
@@ -62,38 +62,38 @@ class ISTFT(U.NewModule):
         return self._zeroPadding_        
 
     def setParam(self, param_ISTFT=None): 
-        if param_ISTFT == None:
+        if param_ISTFT is None:
             param_ISTFT = Param_ISTFT()
         self.param_ISTFT = param_ISTFT
         self._needsUpdate_ = True
-        #update OLA
-        #update OLA_ow
-        
+        self.OLA.setParam(hopSize=self.param_ISTFT.hopSize, frameSize=self.param_ISTFT.frameSize)
+        self.OLA_ow.setParam(hopSize=self.param_ISTFT.hopSize, frameSize=self.param_ISTFT.frameSize)
+
     def getParam(self):
         return Param_ISTFT(frameSize = self._frameSize_, hopSize = self._hopSize_, fftshift = self._fftshift_, windowType = self._windowType_, zeroPadding = self._zeroPadding_)
         
     def setFrameSize(self,frameSize):
         self.param_ISTFT.frameSize = frameSize
         self._needsUpdate_ = True
-        #update OLA
-        #update OLA_ow
+        self.OLA.setFrameSize(frameSize)
+        self.OLA_ow.setFrameSize(frameSize)
         
-    def setHopSize(self):
-        self.param_ISTFT.hopSize
+    def setHopSize(self, hopSize):
+        self.param_ISTFT.hopSize = hopSize
         self._needsUpdate_ = True
-        #update OLA
-        #update OLA_ow
+        self.OLA.setHopSize(hopSize)
+        self.OLA_ow.setHopSize(hopSize)
        
-    def setFftshift(self):
-        self.param_ISTFT.fftshift
+    def setFftshift(self, fftshift):
+        self.param_ISTFT.fftshift = fftshift
         self._needsUpdate_ = True
         
-    def setWindowType(self):
-        self.param_ISTFT.windowType
+    def setWindowType(self, windowType):
+        self.param_ISTFT.windowType = windowType
         self._needsUpdate_ = True
         
-    def setZeroPadding(self):
-        self.param_ISTFT.zeroPadding
+    def setZeroPadding(self, zeroPadding):
+        self.param_ISTFT.zeroPadding = zeroPadding
         self._needsUpdate_ = True
         
     def update(self):
