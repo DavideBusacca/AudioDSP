@@ -48,10 +48,14 @@ class OverlapAdd(U.NewModule):
         if param_OverlapAdd is None:
             param_OverlapAdd = Param_OverlapAdd()
         self.param_OverlapAdd = param_OverlapAdd
+
+        self._needsUpdate_ = True
         
     def update(self):
         self._frameSize_ = self.param_OverlapAdd.frameSize
         self._hopSize_ = self.param_OverlapAdd.hopSize
+
+        self.clear()
 
         self._needsUpdate_ = False
 

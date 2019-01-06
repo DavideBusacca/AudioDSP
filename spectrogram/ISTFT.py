@@ -109,6 +109,9 @@ class ISTFT(U.NewModule):
         self._w_ = U.windowing(np.ones(self._frameSize_), self._frameSize_, typeWindow=self._windowType_)
         #Computing squared windows for LSEE
         self._window_ = np.power(self._w_, 2)
+
+        self.OLA.update()
+        self.OLA_ow.update()
         
         self._needsUpdate_ = False
 
