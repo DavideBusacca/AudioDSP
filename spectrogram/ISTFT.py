@@ -35,12 +35,13 @@ class Param_ISTFT(STFT.Param_STFT):
             
 class ISTFT(U.NewModule):        
     #STFT module
-    def __init__(self, param_ISTFT=None):   
+    def __init__(self, param_ISTFT=None):
+        self.OLA = OverlapAdd.OverlapAdd()
+        self.OLA_ow = OverlapAdd.OverlapAdd()
+
         self.setParam(param_ISTFT)                
         self.update()
-        
-        self.OLA = OverlapAdd.OverlapAdd(hopSize=self._hopSize_, frameSize=self._frameSize_)
-        self.OLA_ow = OverlapAdd.OverlapAdd(hopSize=self._hopSize_, frameSize=self._frameSize_)       
+
         
         self.clear()
         
@@ -67,8 +68,8 @@ class ISTFT(U.NewModule):
             param_ISTFT = Param_ISTFT()
         self.param_ISTFT = param_ISTFT
         self._needsUpdate_ = True
-        self.OLA.setParam(hopSize=self.param_ISTFT.hopSize, frameSize=self.param_ISTFT.frameSize)
-        self.OLA_ow.setParam(hopSize=self.param_ISTFT.hopSize, frameSize=self.param_ISTFT.frameSize)
+        self.OLA.setParam(OverlapAdd.Param_OverlapAdd(hopSize=self.param_ISTFT.hopSize, frameSize=self.param_ISTFT.frameSize))
+        self.OLA_ow.setParam(OverlapAdd.Param_OverlapAdd(hopSize=self.param_ISTFT.hopSize, frameSize=self.param_ISTFT.frameSize))
 
     def getParam(self):
         return Param_ISTFT(frameSize = self._frameSize_, hopSize = self._hopSize_, fftshift = self._fftshift_, windowType = self._windowType_, zeroPadding = self._zeroPadding_)
