@@ -23,12 +23,21 @@ import matplotlib.pyplot as plt
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
 import utils as U
+
+class Param_OverlapAdd():
+    def __init__(self, frameSize=4096, hopSize=2048, fftshift=True, windowType='hann', zeroPadding=0):
+        STFT.Param_STFT.__init__(self, frameSize=frameSize, hopSize=hopSize, fftshift=fftshift, windowType=windowType, zeroPadding=zeroPadding)
     
 class OverlapAdd(U.NewModule):
     def __init__(self, hopSize=512, frameSize=1024):
         self.hopSize = hopSize
         self.frameSize = frameSize
         self.clear()
+
+        #(self, param_STFT=None):
+        #self.setParam(param_STFT)
+        #self.clear()
+        self.update()
 
         
     def getParam(self):
@@ -39,10 +48,18 @@ class OverlapAdd(U.NewModule):
         pass
         
     def update(self):
-        pass
+        self._needsUpdate_ = False
 
-    def process(self):
-        pass       
+    def process(self, x):
+        if self._needsUpdate_ == True:
+            self.update()
+
+        nFrames = np.shape(x)[1]
+        y = np.array(())
+        for i in range(nFrames):
+            y = np.append(y, self.clockProcess(x[:, i]))
+
+        return y
         
     def clockProcess(self, x):
         self._y_[:self.frameSize-self.hopSize] = self._y_[self.hopSize:]
@@ -57,10 +74,12 @@ class OverlapAdd(U.NewModule):
         
 def main(): 
     OLA = OverlapAdd(hopSize=256, frameSize=1024)
-    x = np.ones((1024, 1))
-    y = np.array(())
-    for i in range(1600):
-        y = np.append(y, OLA.clockProcess(x))
+    ones = np.ones((1024, 1))
+    x = ones
+    for i in range(10):
+        x = np.hstack((x, ones))
+
+    y = OLA.process(x)
 
     plt.plot(y)
     plt.show()
