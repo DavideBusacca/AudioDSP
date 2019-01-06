@@ -101,7 +101,7 @@ class STFT(U.NewModule):
     
     def process(self, x):
         if self._needsUpdate_ == True:
-            update()
+            self.update()
             
         nFrames = int(np.floor((x.size-self._frameSize_)/self._hopSize_))
         for f in range(nFrames):
