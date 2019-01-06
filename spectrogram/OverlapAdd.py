@@ -24,30 +24,35 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
 import utils as U
 
-class Param_OverlapAdd():
-    def __init__(self, frameSize=4096, hopSize=2048, fftshift=True, windowType='hann', zeroPadding=0):
-        STFT.Param_STFT.__init__(self, frameSize=frameSize, hopSize=hopSize, fftshift=fftshift, windowType=windowType, zeroPadding=zeroPadding)
+class Param_OverlapAdd(U.NewParam):
+    def __init__(self, frameSize=4096, hopSize=2048):
+        self.frameSize = frameSize
+        self.hopSize = hopSize
     
 class OverlapAdd(U.NewModule):
-    def __init__(self, hopSize=512, frameSize=1024):
-        self.hopSize = hopSize
-        self.frameSize = frameSize
-        self.clear()
-
-        #(self, param_STFT=None):
-        #self.setParam(param_STFT)
-        #self.clear()
+    def __init__(self, Param_OverlapAdd=None):
+        self.setParam(Param_OverlapAdd)
         self.update()
-
+        self.clear()
         
     def getParam(self):
-        pass
-        
-    def setParam(self):        
-        #update OLA from ISTFT
-        pass
+        return Param_OverlapAdd(frameSize=self._frameSize_, hopSize=self._hopSize_)
+
+    def getFrameSize(self):
+        return self._frameSize_
+
+    def getHopSize(self):
+        return self._hopSize_
+
+    def setParam(self, param_OverlapAdd=None):
+        if param_OverlapAdd is None:
+            param_OverlapAdd = Param_OverlapAdd()
+        self.param_OverlapAdd = param_OverlapAdd
         
     def update(self):
+        self._frameSize_ = self.param_OverlapAdd.frameSize
+        self._hopSize_ = self.param_OverlapAdd.hopSize
+
         self._needsUpdate_ = False
 
     def process(self, x):
@@ -62,18 +67,18 @@ class OverlapAdd(U.NewModule):
         return y
         
     def clockProcess(self, x):
-        self._y_[:self.frameSize-self.hopSize] = self._y_[self.hopSize:]
-        self._y_[-self.hopSize:] = self._blankHop_
+        self._y_[:self._frameSize_-self._hopSize_] = self._y_[self._hopSize_:]
+        self._y_[-self._hopSize_:] = self._blankHop_
         self._y_ = self._y_ + x
         
-        return self._y_[:self.hopSize]
+        return self._y_[:self._hopSize_]
     
     def clear(self):
-        self._y_ = np.zeros((self.frameSize))
-        self._blankHop_ = np.zeros((self.hopSize))
+        self._y_ = np.zeros((self._frameSize_))
+        self._blankHop_ = np.zeros((self._hopSize_))
         
-def main(): 
-    OLA = OverlapAdd(hopSize=256, frameSize=1024)
+def main():
+    OLA = OverlapAdd(Param_OverlapAdd(hopSize=256, frameSize=1024))
     ones = np.ones((1024, 1))
     x = ones
     for i in range(10):
