@@ -46,7 +46,7 @@ class ISTFT(U.NewModule):
         self.clear()
         
     def getParam(self):
-        return Param_ISTFT(frameSize = self._frameSize_, hopSize = self._hopSize_, fftshift = self._fftshift_, windowType = self._windowType_, zeroPadding = self._zeroPadding_)
+        return Param_ISTFT(frameSize=self._frameSize_, hopSize=self._hopSize_, fftshift=self._fftshift_, windowType=self._windowType_, zeroPadding=self._zeroPadding_)
         
     def getFrameSize(self):
         return self._frameSize_
