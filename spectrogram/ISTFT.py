@@ -24,8 +24,9 @@ from scipy.fftpack import ifft
 
 import STFT
 import OverlapAdd
-#sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-from .. import utils as U
+
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+import utils as U
 
 class Param_ISTFT(STFT.Param_STFT):
     def __init__(self, frameSize=4096, hopSize=2048, fftshift=True, windowType='hann', zeroPadding=0):
