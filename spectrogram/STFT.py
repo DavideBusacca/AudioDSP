@@ -69,20 +69,20 @@ class STFT(U.NewModule):
         self.param_STFT.frameSize = frameSize
         self._needsUpdate_ = True
         
-    def setHopSize(self):
-        self.param_STFT.hopSize
+    def setHopSize(self, hopSize):
+        self.param_STFT.hopSize = hopSize
         self._needsUpdate_ = True
        
-    def setFftshift(self):
-        self.param_STFT.fftshift
+    def setFftshift(self, fftshift):
+        self.param_STFT.fftshift = fftshift
         self._needsUpdate_ = True
         
-    def setWindowType(self):
-        self.param_STFT.windowType
+    def setWindowType(self, windowType):
+        self.param_STFT.windowType = windowType
         self._needsUpdate_ = True
         
-    def setZeroPadding(self):
-        self.param_STFT.zeroPadding
+    def setZeroPadding(self, zeroPadding):
+        self.param_STFT.zeroPadding = zeroPadding
         self._needsUpdate_ = True
         
     def update(self):
