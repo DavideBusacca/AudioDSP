@@ -40,10 +40,11 @@ class STFT(U.NewModule):
         self.setParam(param_STFT)
         self.update()
         self.clear()
-        
+
     def getParam(self):
-        return Param_STFT(frameSize=self._frameSize_, hopSize=self._hopSize_, fftshift=self._fftshift_, windowType=self._windowType_, zeroPadding=self._zeroPadding_)
-        
+        return Param_STFT(frameSize=self._frameSize_, hopSize=self._hopSize_, fftshift=self._fftshift_,
+                          windowType=self._windowType_, zeroPadding=self._zeroPadding_)
+
     def getFrameSize(self):
         return self._frameSize_
         
@@ -63,10 +64,7 @@ class STFT(U.NewModule):
         if param_STFT == None:
             param_STFT = Param_STFT()
         self.param_STFT = param_STFT
-        
-    def getParam(self):
-        return Param_STFT(frameSize = self._frameSize_, hopSize = self._hopSize_, fftshift = self._fftshift_, windowType = self._windowType_, zeroPadding = self._zeroPadding_)
-        
+
     def setFrameSize(self,frameSize):
         self.param_STFT.frameSize = frameSize
         self._needsUpdate_ = True
