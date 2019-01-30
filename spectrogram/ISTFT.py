@@ -28,11 +28,7 @@ import OverlapAdd
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
 import utils as U
 
-''' #Is the exactly same as the Param_STFT. Useless to create a different one!
-class Param_ISTFT(STFT.Param_STFT):
-    def __init__(self, param_STFT=None):
-        self.param_STFT = param_STFT
-'''
+# Param_ISTFT not necessary. Use Param_STFT
 
 class ISTFT(U.NewModule):        
     #STFT module
