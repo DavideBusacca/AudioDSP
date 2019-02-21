@@ -95,7 +95,7 @@ def zeroPhasing(x, frameSize, zeroPadding, fftshift=True, inverse=False):
     return fftbuffer  
     
 def amp2db(amp):
-    return 20*np.log10(amp)
+    return 20*np.log10(amp+sys.float_info.epsilon)
 
 def db2amp(db):
     return 10**(db/20)

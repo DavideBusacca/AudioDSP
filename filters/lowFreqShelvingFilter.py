@@ -1,9 +1,33 @@
+import sys, os
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.signal import freqz
 
-def lowShelving(x, Wc, G):
+import utilsFilter as UF
+
+def BandPass_AllPassFilter(x, Wc, Wb):
     '''
+    BandPass filter based upon an All Pass filter
+    Adaptation from DAFX book, 2nd edition
+
+    x: input signal
+    Wc: is the normalized cut - off frequency 0 < Wc < 1, i.e. (2 * fc / fS)
+    Wb: is the normalized bandwidth
+    '''
+
+    c = (np.tan(np.pi*Wb/2) - 1) / (np.tan(np.pi*Wb/2) + 1)
+    d = -np.cos(np.pi * Wc)
+
+    xh = [0, 0]
+    y = np.zeros_like(x)
+    for n in np.arange(len(x)):
+        xh_new = x[n] - d * (1 - c) * xh[1] + c * xh[2]
+        ap_y = -c * xh_new + d * (1 - c) * xh[1] + xh[2]
+        xh = [xh_new, xh[1]]
+        y[n] = ap_y # all pass should be like this
+        #y[n] = 0.5 * (x[n] - ap_y) # change to plus for bandreject
+
+def lowShelving_allPassFilter(x, Wc, G):
+    '''
+    Low Shelving filter based on a All Pass filter and a summation with the old input processed
     Adaptation from DAFX book, 2nd edition
 
     x: input signal
@@ -14,9 +38,9 @@ def lowShelving(x, Wc, G):
     V0 = 10 ^ (G / 20)
     H0 = V0 - 1
     if G >= 0:
-        c = (np.tan(Wc/2)-1) / (np.tan(Wc/2)+1) # boost
+        c = (np.tan(np.pi*Wc/2) - 1) / (np.tan(np.pi*Wc/2) + 1) # boost
     else:
-        c = (np.tan(Wc/2)-V0) / (np.tan(Wc/2)+V0) # cut
+        c = (np.tan(np.pi*Wc/2) - V0) / (np.tan(np.pi*Wc/2) + V0) # cut
 
     xh = 0
     y = np.zeros_like(x)
@@ -61,33 +85,12 @@ def lowFreqShelvingFilter_1stOrder(Gain, wc):
         
     return b, a
     
-def plotFilterFreqResponse(numerator, denominator=1):
-    fig = plt.figure()
-    plt.title('Digital filter frequency response')
-    ax1 = fig.add_subplot(111)
-    w, h = freqz(b=numerator, a=denominator)
-    plt.plot(w, 20 * np.log10(np.abs(h)), color='b')
-    plt.ylabel('Amplitude [dB]', color='b')
-    plt.xlabel('Frequency [rad/sample]')
-    ax2 = ax1.twinx()
-    angles = np.unwrap(np.angle(h))
-    plt.plot(w, angles, 'g')
-    plt.ylabel('Angle (radians)', color='g')
-    plt.grid()
-    plt.axis('tight')
-    plt.show()
-    
-    return w, h
-    
-# implement filter
-# https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.lfilter.html
-
-
-def main(Gain=0.25, freqCutoff=1000, fs=44100):
+def main(Gain=0.25, freqCutoff=11025, fs=44100):
     wc = 2 * np.pi * freqCutoff / fs
-    b, a = lowFreqShelvingFilter_1stOrder(Gain, wc)
 
-    plotFilterFreqResponse(b, a)
+    b, a = lowFreqShelvingFilter_1stOrder(Gain, wc)
+    UF.plotFilterFreqResponse(b, a, name="Low frequency shelving filter: ")
+
 
 if __name__ == '__main__':
     main()
