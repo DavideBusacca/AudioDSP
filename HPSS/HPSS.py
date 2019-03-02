@@ -18,15 +18,15 @@
 '''
 import sys, os
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.ndimage import median_filter
-
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
+import utils as U
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../spectrogram/'))
 import STFT
 import ISTFT
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
+import visualization as V
 
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
 
 class Param_HPSS(U.NewParam):
     #Class that contains the parameters to create a STFT module
@@ -209,7 +209,7 @@ def callback(nameInput='../sounds/piano.wav', prefixOutput='processed/sine_stret
              win_harm=31, win_perc=31, masking='hard', hopSize=512, frameSize=2048, zeroPadding=0,
              windowType='hann', fftshift=True):
     
-    #Loading audio
+    # Loading audio
     x, fs = U.wavread(nameInput)
 
     param_STFT = STFT.Param_STFT(hopSize=hopSize, frameSize=frameSize, zeroPadding=zeroPadding, windowType=windowType,
@@ -218,65 +218,29 @@ def callback(nameInput='../sounds/piano.wav', prefixOutput='processed/sine_stret
 
     y_harm, y_perc = HPSS(param_HPSS=param_HPSS).process(x)
 
-    #Writing audio
+    # Writing audio
     U.wavwrite(y_harm, fs, prefixOutput+'harm'+format)
     U.wavwrite(y_perc, fs, prefixOutput+'perc'+format)
-    
-    #Plotting 
-    fig = plt.figure(figsize=(15, 15), dpi= 80, facecolor='w', edgecolor='k')
-    fig.canvas.set_window_title('Original Signal, Harmonic and Percussive Components')
-    
-    tmp = fig.add_subplot(3,1,1)
-    tmp.plot(U.getTimeAxis(x, fs), x)
-    tmp.set_title('Original Signal')
-    tmp = fig.add_subplot(3,1,2)
-    tmp.plot(U.getTimeAxis(y_harm, fs), y_harm)
-    tmp.set_title('Harmonic Component')
-    tmp = fig.add_subplot(3,1,3)
-    tmp.plot(U.getTimeAxis(y_perc, fs), y_perc)  
-    tmp.set_title('Percussive Component')
-    
-    
+
+    # Visualization
+    fig = V.createFigure(title="Original and Harmonic/Percussive Components Signals")
+    V.visualization_TD(x, fs, name="Original Signal", subplot=fig.add_subplot(3, 1, 1), show=False)
+    V.visualization_TD(y_harm, fs, name="Harmonic Component", subplot=fig.add_subplot(3, 1, 2), show=False)
+    V.visualization_TD(y_perc, fs, name="Percussive Component", subplot=fig.add_subplot(3, 1, 3), show=False)
+
+    fig = V.createFigure(title="Original and Harmonic/Percussive Components Spectrograms")
     frameSize_analysis = 3071
     zeroPadding_analysis = 1025
     hopSize_analysis = 1024
-
     param_visualization = STFT.Param_STFT(frameSize=frameSize_analysis, hopSize=hopSize_analysis, fftshift=fftshift,
                                           windowType=windowType, zeroPadding=zeroPadding_analysis)
-    fftshift = True
-    windowType ='hann'
-    X = STFT.STFT(param_STFT=param_visualization).process(x)
-    [tx, fx] = U.getSpectrogramAxis(X, fs, hopSize_analysis)
-    endX = int(X.shape[1]/2+1)
-    Y_harm = STFT.STFT(param_STFT=param_visualization).process(y_harm)
-    endY_harm = int(Y_harm.shape[1]/2+1)
-    [ty_harm, fy_harm] = U.getSpectrogramAxis(Y_harm, fs, hopSize_analysis)
-    Y_perc = STFT.STFT(param_STFT=param_visualization).process(y_perc)
-    endY_perc = int(Y_perc.shape[1]/2+1)
-    [ty_perc, fy_perc] = U.getSpectrogramAxis(Y_perc, fs, hopSize_analysis)
-    
-    fig2 = plt.figure(figsize=(15, 15), dpi= 80, facecolor='w', edgecolor='k')
-    fig2.canvas.set_window_title('Spectrograms')
-    tmp = fig2.add_subplot(3,2,1)
-    tmp.pcolormesh(tx, fx, np.transpose(U.amp2db(U.getMagnitude(X[:, :endX]))))
-    tmp.set_title('Original Magnitude Spectrogram')
-    tmp = fig2.add_subplot(3,2,2)
-    plt.pcolormesh(tx, fx, np.transpose(np.diff(U.getPhase(X[:, :endX]))))
-    tmp.set_title('Differential of the Original Phase Spectrogram')
-    tmp = fig2.add_subplot(3,2,3)
-    plt.pcolormesh(ty_harm, fy_harm, np.transpose(U.amp2db(U.getMagnitude(Y_harm[:, :endY_harm]))))
-    tmp.set_title('Harmonic Component Magnitude Spectrogram')    
-    tmp = fig2.add_subplot(3,2,4)
-    plt.pcolormesh(ty_harm, fy_harm, np.transpose(np.diff(U.getPhase(Y_harm[:, :endY_harm]))))
-    tmp.set_title('Differential of the Harmonic Component Phase Spectrogram')
-    tmp = fig2.add_subplot(3,2,5)
-    plt.pcolormesh(ty_perc, fy_perc, np.transpose(U.amp2db(U.getMagnitude(Y_perc[:, :endY_perc]))))
-    tmp.set_title('Percussive Component Magnitude Spectrogram')    
-    tmp = fig2.add_subplot(3,2,6)
-    plt.pcolormesh(ty_perc, fy_perc, np.transpose(np.diff(U.getPhase(Y_perc[:, :endY_perc]))))
-    tmp.set_title('Differential of the Percussive Component Phase Spectrogram')
-    
-    plt.show()
+    V.visualization_FD(x, fs, name="Original", param_analysis_STFT=param_visualization,
+                     mX_subplot=fig.add_subplot(3, 2, 1), pX_subplot=fig.add_subplot(3, 2, 2), show=False)
+    V.visualization_FD(y_harm, fs, name="Harmonic Component", param_analysis_STFT=param_visualization,
+                     mX_subplot=fig.add_subplot(3, 2, 3), pX_subplot=fig.add_subplot(3, 2, 4), show=False)
+    V.visualization_FD(y_perc, fs, name="Percussive Component", param_analysis_STFT=param_visualization,
+                     mX_subplot=fig.add_subplot(3, 2, 5), pX_subplot=fig.add_subplot(3, 2, 6), show=True)
+
 
 if __name__ == "__main__":
     callback()
