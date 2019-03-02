@@ -20,10 +20,10 @@
 import sys, os
 import numpy as np
 from scipy.fftpack import fft
-import matplotlib.pyplot as plt
-
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
 import utils as U
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
+import visualization as V
    
 class Param_STFT(U.NewParam):
     #Class that contains the parameters to create a STFT module
@@ -119,7 +119,8 @@ class STFT(U.NewModule):
     def clear(self):
         pass
 
-def callbackClass(nameInput='../sounds/sine.wav', frameSize=3071, zeroPadding=1025, hopSize=2048, fftshift=True, windowType='hann'):   
+def callbackClass(nameInput='../sounds/sine.wav', frameSize=3071, zeroPadding=1025, hopSize=2048, fftshift=True,
+                  windowType='hann'):
 
     #Loading audio
     x, fs = U.wavread(nameInput)
@@ -127,25 +128,12 @@ def callbackClass(nameInput='../sounds/sine.wav', frameSize=3071, zeroPadding=10
     #Computing STFT  
     X = STFT(Param_STFT(frameSize, hopSize, fftshift, windowType, zeroPadding)).process(x)
     
-    #Plotting 
-    fig = plt.figure(figsize=(15, 15), dpi= 80, facecolor='w', edgecolor='k')
-    fig.canvas.set_window_title('Signals and Window')
-    
-    tmp = fig.add_subplot(3,1,1)
-    tmp.plot(U.getTimeAxis(x, fs), x)
-    tmp.set_title('Original Signal')
-    
-    [tx, fx] = U.getSpectrogramAxis(X, fs, hopSize)
-    endX = int(X.shape[1]/2+1)
-    fig.canvas.set_window_title('Spectrograms')
-    tmp = fig.add_subplot(3,1,2)
-    tmp.pcolormesh(tx, fx, np.transpose(U.amp2db(U.getMagnitude(X[:, :endX]))))
-    tmp.set_title('Original Magnitude Spectrogram')
-    tmp = fig.add_subplot(3,1,3)
-    plt.pcolormesh(tx, fx, np.transpose(np.diff(U.getPhase(X[:, :endX]))))
-    tmp.set_title('Differential of the Original Phase Spectrogram')
+    #Plotting (the STFT is being computed again inside the function visualization_FD())
+    fig = V.createFigure(title="Signal and Spectrogram")
+    V.visualization_TD(x, fs, name="Original Signal", subplot=fig.add_subplot(3, 1, 1), show=False)
+    param_STFT = Param_STFT(frameSize=3071, zeroPadding=1025, hopSize=1024, fftshift=True, windowType='hann')
+    V.visualization_FD(x, fs, name="", show=True, param_analysis_STFT=param_STFT,
+                     mX_subplot=fig.add_subplot(3, 1, 2), pX_subplot=fig.add_subplot(3, 1, 3))
 
-    plt.show()   
-    
 if __name__ == "__main__":
     callbackClass()

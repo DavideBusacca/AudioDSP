@@ -19,19 +19,18 @@
 
 import os, sys
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.fftpack import ifft
-
 import STFT
 import OverlapAdd
-
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
 import utils as U
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
+import visualization as V
 
 # Param_ISTFT not necessary. Use Param_STFT.
 
 class ISTFT(U.NewModule):        
-    #STFT module
+    # ISTFT module
     def __init__(self, param_STFT=None):
         self.OLA = OverlapAdd.OverlapAdd()
         self.OLA_ow = OverlapAdd.OverlapAdd()
@@ -151,28 +150,16 @@ def callback(nameInput='../sounds/sine.wav', nameOutput='processed/sine_STFT.wav
     U.wavwrite(y, fs, nameOutput)
 
     # Some Nice Plotting
-    fig = plt.figure(figsize=(15, 15), dpi= 80, facecolor='w', edgecolor='k')
-    fig.canvas.set_window_title('Signals and Window')
-    
-    tmp = fig.add_subplot(2,1,1)
-    tmp.plot(U.getTimeAxis(x, fs), x)
-    tmp.set_title('Original Signal')
-    tmp = fig.add_subplot(2,1,2)
-    tmp.plot(U.getTimeAxis(y, fs), y)
-    tmp.set_title('Re-Synthesized Signal')
-    
-    [tx, fx] = U.getSpectrogramAxis(X, fs, hopSize)
-    endX = int(X.shape[1]/2+1)
-    fig2 = plt.figure(figsize=(15, 15), dpi= 80, facecolor='w', edgecolor='k')
-    fig2.canvas.set_window_title('Spectrograms')
-    tmp = fig2.add_subplot(2,1,1)
-    tmp.pcolormesh(tx, fx, np.transpose(U.amp2db(U.getMagnitude(X[:, :endX]))))
-    tmp.set_title('Original Magnitude Spectrogram')
-    tmp = fig2.add_subplot(2,1,2)
-    plt.pcolormesh(tx, fx, np.transpose(np.diff(U.getPhase(X[:, :endX]))))
-    tmp.set_title('Differential of the Original Phase Spectrogram')
+    #Plotting (the STFT is being computed again inside the function visualization_FD())
+    fig = V.createFigure(title="Original and Resynthysized Signals")
+    V.visualization_TD(x, fs, name="Original Signal", subplot=fig.add_subplot(2, 1, 1), show=False)
+    V.visualization_TD(y, fs, name="Original Signal", subplot=fig.add_subplot(2, 1, 2), show=False)
 
-    plt.show()
+    fig = V.createFigure(title="Original and Resynthysized Spectrograms")
+    V.visualization_FD(x, fs, name="Original", param_analysis_STFT=param_STFT,
+                     mX_subplot=fig.add_subplot(4, 1, 1), pX_subplot=fig.add_subplot(4, 1, 2), show=False)
+    V.visualization_FD(y, fs, name="Resynthesized", param_analysis_STFT=param_STFT,
+                     mX_subplot=fig.add_subplot(4, 1, 3), pX_subplot=fig.add_subplot(4, 1, 4), show=True)
 
     # Evaluating the difference between input and re-synthesized signals
     print("The sum of the differences between the original signal and the re-synthsized using the STFT is: " +
