@@ -20,11 +20,14 @@ def visualization_TD(x, fs, name, show=True, subplot=None, yNormalization=True):
         fss: a list containing a sample rate or a list containing all the sample rates (one for each file)
     '''
 
-    if subplot:
-        subplot.plot(U.getTimeAxis(x, fs), x)
-        subplot.set_title(name)
-        if yNormalization:
-            subplot.set_ylim((-1,1))
+    if subplot is None:
+        fig = createFigure(title=name)
+        subplot = fig.add_subplot(1,1,1)
+
+    subplot.plot(U.getTimeAxis(x, fs), x)
+    subplot.set_title(name)
+    if yNormalization:
+        subplot.set_ylim((-1,1))
      
     if show==True:     
         plt.show()
@@ -34,6 +37,11 @@ def visualization_FD(x, fs, name, show=True, param_analysis_STFT=None, mX_subplo
     '''
     Frequency-domain visualization of a signal
     '''
+
+    if mX_subplot is None and pX_subplot is None:
+        fig = createFigure(title=name)
+        mX_subplot = fig.add_subplot(2, 1, 1)
+        pX_subplot = fig.add_subplot(2, 1, 2)
 
     analysis_STFT = STFT.STFT(param_analysis_STFT)
     X = analysis_STFT.process(x)
@@ -72,8 +80,11 @@ def callback(nameInput='../sounds/sine.wav', frameSize=3071, zeroPadding=1025, h
     # Visualization frequency domain
     param_analysis_STFT = STFT.Param_STFT(frameSize=3071, zeroPadding=1025, hopSize=1024, fftshift=True,
                                           windowType='hann')
-    visualization_FD(x, fs, name, show=True, param_analysis_STFT=param_analysis_STFT,
-                     mX_subplot=fig.add_subplot(3, 1, 2), pX_subplot=fig.add_subplot(3, 1, 3))
+    visualization_FD(x, fs, name, param_analysis_STFT=param_analysis_STFT,
+                     mX_subplot=fig.add_subplot(3, 1, 2), pX_subplot=fig.add_subplot(3, 1, 3), show=False)
+
+    visualization_TD(x, fs, name, show=False)
+    visualization_FD(x, fs, name, param_analysis_STFT=param_analysis_STFT)
 
 if __name__ == '__main__':
     callback()
