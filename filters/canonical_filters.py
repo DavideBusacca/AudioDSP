@@ -1,6 +1,9 @@
+import sys, os
 import numpy as np
-
 import utilsFilter as UF
+import zplane as Z
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
+import visualization as V
 
 def CanonicalFilter_FirstOrder(K, type):
     '''
@@ -108,13 +111,21 @@ def main(Gain=0.25, freqCutoff=11025, fs=44100):
     wc = wc / np.pi
     for i in range(len(types)-2):
         b, a = CanonicalFilter(wc, type=types[i], order=1)
-        name = 'Canonical ' + types[i] + ' 1st order filter:'
-        UF.plotFilterFreqResponse(b, a, name)
+        name = 'Canonical ' + types[i] + ' 1st order filter'
+        fig = V.createFigure(title=name)
+        UF.plotFilterFreqResponse(b, a, name, subplot=fig.add_subplot(1, 2, 1), show=False)
+        z, p, k = UF.tf2zpk(b, a)
+        Z.plot_zplane(z, p, k, subplot=fig.add_subplot(1, 2, 2))
 
     for i in range(len(types)):
         b, a = CanonicalFilter(wc/np.pi, type=types[i], order=2)
-        name = 'canonical ' + types[i] + ' 2nd order'
-        UF.plotFilterFreqResponse(b, a, name)
+        name = 'Canonical ' + types[i] + ' 2nd order filter'
+        fig = V.createFigure(title=name)
+        UF.plotFilterFreqResponse(b, a, name, subplot=fig.add_subplot(1, 2, 1), show=False)
+        z, p, k = UF.tf2zpk(b, a)
+        Z.plot_zplane(z, p, k, subplot=fig.add_subplot(1, 2, 2))
+
+    V.show()
 
 
 if __name__ == '__main__':

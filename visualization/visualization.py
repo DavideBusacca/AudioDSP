@@ -4,7 +4,6 @@ import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 import utils as U
-
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../spectrogram'))
 import STFT as STFT
 
@@ -13,6 +12,9 @@ def createFigure(title=""):
     figure.canvas.set_window_title(title)
 
     return figure
+
+def show():
+    plt.show()
 
 def visualization_TD(x, fs, name, show=True, subplot=None, yNormalization=True):
     '''
