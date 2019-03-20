@@ -26,6 +26,10 @@ import STFT
 import ISTFT
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
 import visualization as V
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../utils/'))
+import median_filtering as MF
+
+import matplotlib.pyplot as plt
 
 
 class Param_HPSS(U.NewParam):
@@ -123,68 +127,36 @@ class HPSS(U.NewModule):
 
         return mask_harm, mask_perc
 
-    # softMask
-
-    def computing_hpss_masks(self, mX):
-        """
-        Masks used by median-filtering harmonic percussive source separation (HPSS).
-
-        Parameters
-        ----------
-        mX: input magnitude spectrogram
-        win_harm: number of bins used for median filtering in frequency direction
-        win_perc: number of bins used for median filtering in time direction
-
-        Returns
-        -------
-        harmonic component
-        percussive component
-
-        """
-
-        #Computing harmonic enhanced spectrogram
-        harm = np.empty_like(mX)
-        harm[:] = median_filter(mX, size=(self._win_perc_, 1), mode='reflect')
-        #Computing percussive enhanced spectrogram
-        perc = np.empty_like(mX)
-        perc[:] = median_filter(mX, size=(1, self._win_harm_), mode='reflect')
-
-        #Computing harmonic and percussive masks
-        if self._masking_ == 'hard':
-            mask_harm, mask_perc = self.hardMask(harm, perc)
-        # Soft masking can be implemented here
+    def softMask(self, harm, perc):
+        '''
+        Soft masking for Harmonic/Percussive Source Separation
+        '''
+        total = harm + perc
+        mask_harm = harm / total
+        mask_perc = perc / total
 
         return mask_harm, mask_perc
-
-    '''
-
-    def clockProcess(self, x):
-        #need to create a STFT object inside
-        #need to create a memory where to store the value that will be used to compute the median
-        #maybe it's just better to create an object for the median before
-        X = self.STFT.clockProcess(x)
-
-        #Computing magnitude and phase spectrograms
-        mX = U.getMagnitude(X)
-        pX = U.getPhase(X)
-
-        #Computing HPSS masks
-        comp_harm, comp_perc = self.computing_hpss_masks_clock(mX) # how to do the masking in real-time?
-
-        #Computing Harmonic and Percussive components
-        Y_harm = mX*comp_harm*np.exp(1j*pX)
-        Y_perc = mX*comp_perc*np.exp(1j*pX)
-
-        y_harm = self._ISTFT_.clockProcess(Y_harm)
-        y_perc = self._ISTFT_.clockProcess(Y_perc)
-
-        return y_harm, y_perc
-    '''
 
     def clear(self):
         pass
 
+    ''' #block-by-block implementation
+    def process_using_clockProcess(self, x):
+        if self._needsUpdate_ == True:
+            self.update()
+
+        nFrames = int(np.floor((x.size-self._STFT_.getFrameSize())/self._STFT_.getHopSize()))
+        for f in range(nFrames):
+            frame = x[self._STFT_.getHopSize()*f:self._STFT_.getHopSize()*f+self._STFT_.getFrameSize()]
+            frame = self._STFT_.clockProcess(frame)
+
+            # block-by-block process
+    '''
+
     def process(self, x):
+        if self._needsUpdate_ == True:
+            self.update()
+
         #Computing STFT
         X = self._STFT_.process(x)
 
@@ -192,12 +164,18 @@ class HPSS(U.NewModule):
         mX = U.getMagnitude(X)
         pX = U.getPhase(X)
 
-        #Computing HPSS masks
-        comp_harm, comp_perc = self.computing_hpss_masks(mX)
+        #Computing Enhanced Spectrograms
+        harm, perc = MF.computing_enhanced_spectrograms(mX, win_harm=self._win_harm_, win_perc=self._win_perc_)
+
+        #Computing harmonic and percussive masks
+        if self._masking_ == 'hard':
+            mask_harm, mask_perc = self.hardMask(harm, perc)
+        elif self._masking_ == 'soft':
+            mask_harm, mask_perc = self.softMask(harm, perc)
 
         #Computing Harmonic and Percussive components
-        Y_harm = mX*comp_harm*np.exp(1j*pX)
-        Y_perc = mX*comp_perc*np.exp(1j*pX)
+        Y_harm = (mX*mask_harm) * np.exp(1j*pX)
+        Y_perc = (mX*mask_perc) * np.exp(1j*pX)
 
         y_harm = self._ISTFT_.process(Y_harm)
         y_perc = self._ISTFT_.process(Y_perc)
@@ -206,7 +184,7 @@ class HPSS(U.NewModule):
 
 
 def callback(nameInput='../sounds/piano.wav', prefixOutput='processed/sine_stretched_HPSS', format='.wav',
-             win_harm=31, win_perc=31, masking='hard', hopSize=512, frameSize=2048, zeroPadding=0,
+             win_harm=17, win_perc=17, masking='soft', hopSize=512, frameSize=2048, zeroPadding=0,
              windowType='hann', fftshift=True):
     
     # Loading audio
@@ -240,6 +218,8 @@ def callback(nameInput='../sounds/piano.wav', prefixOutput='processed/sine_stret
                      mX_subplot=fig.add_subplot(3, 2, 3), pX_subplot=fig.add_subplot(3, 2, 4), show=False)
     V.visualization_FD(y_perc, fs, name="Percussive Component", param_analysis_STFT=param_visualization,
                      mX_subplot=fig.add_subplot(3, 2, 5), pX_subplot=fig.add_subplot(3, 2, 6), show=True)
+                     
+
 
 
 if __name__ == "__main__":

@@ -98,8 +98,6 @@ def CanonicalFilter(Wc, type='allpass', order=1, Q=None):
 
     return b, a
 
-
-
 def main(Gain=0.25, freqCutoff=11025, fs=44100):
     wc = 2 * np.pi * freqCutoff / fs
 
