@@ -188,3 +188,14 @@ def resample(x, sr_old, sr_new):
 
 def rms(x):
     return np.sqrt((np.mean(np.power(x, 2))))
+
+
+def correlation(x, y):
+    print("Correlation function from utility not yet debugged")
+    len = min(x.shape[0], y.shape[0])
+    correlation = np.empty((len, 1))
+    correlation[0] = np.sum(x * y)
+    for i in (np.arange(len-1)+1):
+        correlation[i] = np.sum(x[:-i] * y[i:])
+
+    return correlation

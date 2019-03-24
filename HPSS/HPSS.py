@@ -157,23 +157,21 @@ class HPSS(U.NewModule):
         if self._needsUpdate_ == True:
             self.update()
 
-        #Computing STFT
+        # Computing STFT
         X = self._STFT_.process(x)
 
-        #Computing magnitude and phase spectrograms
+        # Computing magnitude and phase spectrograms
         mX = U.getMagnitude(X)
         pX = U.getPhase(X)
 
-        #Computing Enhanced Spectrograms
-        harm, perc = MF.computing_enhanced_spectrograms(mX, win_harm=self._win_harm_, win_perc=self._win_perc_)
+        # Computing Enhanced Spectrograms
+        mH, mP = MF.computing_enhanced_spectrograms(mX, win_harm=self._win_harm_, win_perc=self._win_perc_)
 
-        #Computing harmonic and percussive masks
-        if self._masking_ == 'hard':
-            mask_harm, mask_perc = self.hardMask(harm, perc)
-        elif self._masking_ == 'soft':
-            mask_harm, mask_perc = self.softMask(harm, perc)
+        # Computing harmonic and percussive masks
+        mask_harm, mask_perc = MF.compute_masks(mH, mP, power=power, margin_harm=margin_harm, margin_perc=margin_perc,
+                                                masking=masking)
 
-        #Computing Harmonic and Percussive components
+        # Computing Harmonic and Percussive components
         Y_harm = (mX*mask_harm) * np.exp(1j*pX)
         Y_perc = (mX*mask_perc) * np.exp(1j*pX)
 
@@ -183,7 +181,7 @@ class HPSS(U.NewModule):
         return y_harm, y_perc
 
 
-def callback(nameInput='../sounds/piano.wav', prefixOutput='processed/sine_stretched_HPSS', format='.wav',
+def callback(nameInput='../sounds/piano.wav', prefixOutput='processed/piano_stretched_HPSS', format='.wav',
              win_harm=17, win_perc=17, masking='soft', hopSize=512, frameSize=2048, zeroPadding=0,
              windowType='hann', fftshift=True):
     

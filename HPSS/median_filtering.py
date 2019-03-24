@@ -30,7 +30,54 @@ The second version is supposed to be a prototype for a block-to-block- real-time
 Consider that the median filter in time (harmonic) should be centered in the 'real-time' frame.
 '''
 
-def computing_enhanced_spectrograms(mX, win_harm=17, win_perc=17, test_mode=False):
+def compute_hard_mask(X, X_ref):
+    # Hard masking for Harmonic/Percussive Source Separation
+    return X > X_ref
+
+def compute_soft_mask(X, X_ref, power=2, split_zeros=False):
+
+    # Preparing rescaling and looking for invalid indexes
+    Z = np.maximum(X, X_ref).astype(np.float32)
+    bad_idx = (Z < np.finfo(np.float32).tiny)
+    good_idx = ~bad_idx
+    Z[bad_idx] = 1
+
+    # Rescaling and power application
+    X = (X / Z) ** power
+    X_ref = (X_ref / Z) ** power
+
+    # Computing mask
+    mask = np.empty_like(X)
+    mask[good_idx] = X[good_idx] / (X[good_idx] + X_ref[good_idx])
+
+    bad_value = 0
+    if split_zeros:
+        bad_value = 0.5
+    mask[bad_idx] = bad_value
+
+    return mask
+
+
+def compute_masks(mH, mP, power=2.0, margin_harm=1, margin_perc=1, masking='hard'):
+    # Soft masking for Harmonic/Percussive Source Separation
+    if margin_harm < 1 or margin_perc < 1:
+        print("Attention: both margins should be major than 1")
+        margin_harm = margin_perc = 1
+
+    if np.isfinite(power):
+        split_zeros = (margin_harm == 1 and margin_perc == 1)
+        mask_harm = compute_soft_mask(mH, mP * margin_harm, power=power, split_zeros=split_zeros)
+        mask_perc = compute_soft_mask(mP, mH * margin_perc, power=power, split_zeros=split_zeros)
+    else:
+        mask_harm = compute_hard_mask(mH, mP * margin_harm)
+        mask_perc = compute_hard_mask(mP, mH * margin_perc)
+
+    return mask_harm, mask_perc
+
+def compute_residual_spectrogram(mX, mH, mP):
+    return mX - (mH + mP)
+
+def compute_enhanced_spectrograms(mX, win_harm=17, win_perc=17, test_mode=False):
     """
     Masks used by median-filtering harmonic percussive source separation (HPSS).
 
@@ -47,41 +94,41 @@ def computing_enhanced_spectrograms(mX, win_harm=17, win_perc=17, test_mode=Fals
 
     """
     # Computing harmonic and percussive enhanced spectrograms
-    harm = np.empty_like(mX)
-    perc = np.empty_like(mX)
+    mH = np.empty_like(mX)
+    mP = np.empty_like(mX)
 
     if not(test_mode): # test mode is used to match the results of the block-based version
-        harm[:] = median_filter(mX, size=(win_harm, 1), mode='reflect') # use mode='wrap' to get the same results of the other version
-        perc[:] = median_filter(mX[:], size=(1, win_perc), mode='reflect') # use mode='constant' to get the same results of the other version
+        mH[:] = median_filter(mX, size=(win_harm, 1), mode='reflect') # use mode='wrap' to get the same results of the other version
+        mP[:] = median_filter(mX, size=(1, win_perc), mode='reflect') # use mode='constant' to get the same results of the other version
     else:
-        harm[:] = median_filter(mX, size=(win_harm, 1), mode='wrap')
-        perc[:] = median_filter(mX[:], size=(1, win_perc), mode='constant')
+        mH[:] = median_filter(mX, size=(win_harm, 1), mode='wrap')
+        mP[:] = median_filter(mX, size=(1, win_perc), mode='constant')
 
-    return harm, perc
+    return mH, mP
 
-def computing_enhanced_spectrograms_block_based(mX, win_harm=17, win_perc=17):
+def compute_enhanced_spectrograms_block_based(mX, win_harm=17, win_perc=17):
     row = mX.shape[0]
     col = mX.shape[1]
 
     shift = (int(np.floor(win_harm / 2))) # middle of the buffer
 
     buffer = np.transpose(mX)[:col, 0:win_harm]
-    per = np.empty_like(mX)
-    har = np.empty_like(mX)
+    mP = np.empty_like(mX)
+    mH = np.empty_like(mX)
 
     for r in range(row):
-        per[r] = medfilt(buffer[:, shift], win_perc) # time position centered in the middle of the buffer
-        har[r] = np.median(buffer, axis=1)
+        mP[r] = medfilt(buffer[:, shift], win_perc) # time position centered in the middle of the buffer
+        mH[r] = np.median(buffer, axis=1)
 
         # updating the buffer: shifting to the left and insert new element at the end
         buffer = np.roll(buffer, -1, axis=1)
         buffer[:, win_harm-1] = mX[(r+win_harm) % row]
 
     # time shifting: per[r] could be substituted with per[(r+shift) % row] to get the same result!
-    har = np.roll(har, shift, 0)
-    per = np.roll(per, shift, 0)
+    mH = np.roll(mH, shift, 0)
+    mP = np.roll(mP, shift, 0)
 
-    return har, per
+    return mH, mP
 
 def main():
     # Function to test if the two functions return the same.
@@ -92,10 +139,10 @@ def main():
     win_perc = 17
 
     time_0 = time.time()
-    harm, perc = computing_enhanced_spectrograms(test_matrix, win_harm=win_harm, win_perc=win_perc, \
-                                                 test_mode=True)
+    mH, mP = compute_enhanced_spectrograms(test_matrix, win_harm=win_harm, win_perc=win_perc, \
+                                           test_mode=True)
     time_1 = time.time()
-    har, per = computing_enhanced_spectrograms_block_based(test_matrix, win_harm=win_harm, win_perc=win_perc)
+    mH_t, mP_t = compute_enhanced_spectrograms_block_based(test_matrix, win_harm=win_harm, win_perc=win_perc)
     time_2 = time.time()
 
     print("Time profiling 1st method: " + str(time_1 - time_0))
@@ -105,9 +152,9 @@ def main():
     plt.pcolormesh(test_matrix)
     # Difference matrix between the two methods for each enhanced spectrogram
     plt.figure()
-    plt.pcolormesh(harm-har)
+    plt.pcolormesh(mH-mH_t)
     plt.figure()
-    plt.pcolormesh(abs(perc-per))
+    plt.pcolormesh(abs(mP-mP_t))
 
     plt.show()
 
