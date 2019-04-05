@@ -1,3 +1,22 @@
+'''
+ Copyright (C) 2018  Busacca Davide
+
+ This file is part of AudioDSP-Python.
+
+ PV is free software: you can redistribute it and/or modify it under
+ the terms of the GNU Affero General Public License as published by the Free
+ Software Foundation (FSF), either version 3 of the License, or (at your
+ option) any later version.
+
+ PV is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ details.
+
+ You should have received a copy of the Affero GNU General Public License
+ version 3 along with PV.  If not, see http://www.gnu.org/licenses/
+'''
+
 import sys, os
 import essentia.standard as ess
 from essentia import array as essarray
@@ -10,8 +29,27 @@ import STFT
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
 import visualization as V
 
+'''
+Implementation of Harmonic Percussive Source Separation algorithm using Median Filtering.
+
+The Essentia library is used to compute the STFT and ISTFT.
+The functions to compute the median filtering are defined in the script "median_filtering.py".
+
+Some basic testing are provided in "test_HPSS_librosa.py".
+'''
 
 def compute_STFT(x, frameSize=2048, hopSize=1024, zeroPadding=0, windowType='hann'):
+    '''
+    Compute the Short Time Fourier Transform of an input signal and returns the spectrogram obtained.
+
+    :param x: input signal
+    :param frameSize:
+    :param hopSize:
+    :param zeroPadding:
+    :param windowType:
+    :return: X: output spectrogram
+    '''
+
     window = ess.Windowing(size=frameSize, type=windowType)
     fft = ess.FFT(size=frameSize+zeroPadding)
 
@@ -28,6 +66,19 @@ def compute_STFT(x, frameSize=2048, hopSize=1024, zeroPadding=0, windowType='han
 
 
 def compute_ISTFT(X, frameSize=2048, hopSize=1024, zeroPadding=0, windowType='hann', len=None):
+    '''
+    Compute the Inverse Short Time Fourier Transform of an input spectrogram and returns the signal obtained.
+
+    :param X:           input spectrogram
+    :param frameSize:
+    :param hopSize:
+    :param zeroPadding:
+    :param windowType:
+    :param len:
+    :return:
+    x:                  output signal
+    '''
+
     window = ess.Windowing(size=frameSize, type=windowType)
     ifft = ess.IFFT(size=frameSize+zeroPadding)
     # ola = ess.OverlapAdd(frameSize=frameSize, hopSize=hopSize) # I wasn't able to use that for the ISTFT
@@ -51,7 +102,18 @@ def compute_ISTFT(X, frameSize=2048, hopSize=1024, zeroPadding=0, windowType='ha
 
 
 def HPSS(X, kernel=(17, 17), margin=(1, 1), power=2.0):
-    # Implementation of harmonic percussive separation using median filtering with the Essentia library
+    '''
+    Given a spectrogram X, returns the harmonic and percussive component obtained using the harmonic/percussive
+    separation based on median filtering.
+
+    :param X:       input spectrogram
+    :param kernel:  tuple containing the kernel size of the median filters (harmonic, percussive)
+    :param margin:  margin sizes for the masks
+    :param power:   Exponent for the Wiener filter when constructing soft mask matrices.
+                    Setting power to np.inf activates the hard masking instead of the soft masking.
+    :return:
+    Y_harm, Y_perc: harmonic and percussive output spectrograms
+    '''
 
     # kernel(length harmonic median filter, length percussive median filter)
     # margin(margin harmonic, margin percussive)
@@ -89,6 +151,20 @@ def HPSS(X, kernel=(17, 17), margin=(1, 1), power=2.0):
 
 def HPSS_routine_essentia(x, hopSize=512, frameSize=2048, zeroPadding=0, windowType='hann',
                           kernel=(17, 17), margin=(1, 1), power=2.0):
+    '''
+    The harmonic and percussive components are computed from an input signal x.
+
+    :param x:           input signal
+    :param hopSize:
+    :param frameSize:
+    :param zeroPadding:
+    :param windowType:
+    :param kernel:
+    :param margin:
+    :param power:
+    :return:
+    y_harm, y_perc:     harmonic and percussive component output signals
+    '''
 
     X = compute_STFT(x, frameSize=frameSize, hopSize=hopSize, zeroPadding=zeroPadding, windowType=windowType)
     Y_harm, Y_perc = HPSS(X, kernel=kernel, margin=margin, power=power)
@@ -101,7 +177,15 @@ def HPSS_routine_essentia(x, hopSize=512, frameSize=2048, zeroPadding=0, windowT
 
 
 def visualize_HPSS(x, fs, y_harm, y_perc):
-    # Visualization
+    '''
+    Visualization of the original signal with the harmonic and percussive components.
+
+    :param x:
+    :param fs:
+    :param y_harm:
+    :param y_perc:
+    :return:
+    '''
     fig = V.createFigure(title="Original and Harmonic/Percussive Components Signals")
     V.visualization_TD(x, fs, name="Original Signal", subplot=fig.add_subplot(3, 1, 1), show=False)
     V.visualization_TD(y_harm, fs, name="Harmonic Component", subplot=fig.add_subplot(3, 1, 2), show=False)
