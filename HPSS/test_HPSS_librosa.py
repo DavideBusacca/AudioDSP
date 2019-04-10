@@ -1,7 +1,7 @@
 '''
  Copyright (C) 2018  Busacca Davide
 
- This file is part of AudioDSP-Python.
+ This file is part of AudioDSP.
 
  PV is free software: you can redistribute it and/or modify it under
  the terms of the GNU Affero General Public License as published by the Free
@@ -24,9 +24,8 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import essentia.standard as ess
 import librosa
-import HPSS_essentia
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
+from AudioDSP.HPSS import HPSS_essentia
+from AudioDSP import utils as U
 
 '''
 Raw testing for the proposed implementation of Harmonic Percussive Separation based on Median Filtering (HPSS).
@@ -42,7 +41,7 @@ def compare(X, X2):
     '''
     print(np.sum(np.sum(U.getMagnitude(X - X2))))
 
-def main(nameInput='../sounds/piano.wav', fs=44100, hopSize=512, frameSize=2048, zeroPadding=0, windowType='hann',
+def main(nameInput='AudioDSP/sounds/piano.wav', fs=44100, hopSize=512, frameSize=2048, zeroPadding=0, windowType='hann',
          kernel=(17, 17), margin=(1, 1), power=2.0):
     '''
     Compares the result of the HPSS proposed and its Librosa implementation.

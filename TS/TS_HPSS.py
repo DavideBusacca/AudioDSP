@@ -16,23 +16,13 @@
  You should have received a copy of the Affero GNU General Public License
  version 3 along with PV.  If not, see http://www.gnu.org/licenses/
 '''
+from AudioDSP.TS import phaseVocoder as PV
+from AudioDSP.TS import overlap_add as OLA
+from AudioDSP.HPSS import HPSS
+from AudioDSP import utils as U
+from AudioDSP.visualization import visualization as V
 
-import sys, os
-import numpy as np
-
-import phaseVocoder as PV
-import overlap_add as OLA
-
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../spectrogram/'))
-import STFT as STFT
-import ISTFT as ISTFT
-
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../HPSS/'))
-import HPSS
-
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
-import visualization as V
+# TODO fix TS_HPSS with the new HPSS
 
 def TS_HPSS(x, alpha=1.5,\
     win_harm_HPSS=31, win_perc_HPSS=31, masking_HPSS='hard', hopSize_HPSS=512, frameSize_HPSS=2048, zeroPadding_HPSS=0, windowType_HPSS='hann', fftshift_HPSS=True, normalized_HPSS=False, \

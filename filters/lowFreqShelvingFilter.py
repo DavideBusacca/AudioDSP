@@ -1,7 +1,5 @@
-import sys, os
 import numpy as np
-
-import utilsFilter as UF
+from AudioDSP.filters import utilsFilter as UF
 
 def BandPass_AllPassFilter(x, Wc, Wb):
     '''

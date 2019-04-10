@@ -18,12 +18,10 @@
 '''
 import matplotlib
 matplotlib.use('Qt5Agg')
-import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
-import utils as U
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../spectrogram'))
-import STFT as STFT
+from AudioDSP import utils as U
+from AudioDSP.spectrogram import STFT
 
 def createFigure(title=""):
     figure = plt.figure(figsize=(15, 15), dpi= 80, facecolor='w', edgecolor='k')

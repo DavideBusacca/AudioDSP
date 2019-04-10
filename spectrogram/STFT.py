@@ -17,13 +17,10 @@
  version 3 along with PV.  If not, see http://www.gnu.org/licenses/
 '''
 
-import sys, os
 import numpy as np
 from scipy.fftpack import fft
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
-import visualization as V
+from AudioDSP import utils as U
+from AudioDSP.visualization import visualization as V
    
 class Param_STFT(U.NewParam):
     #Class that contains the parameters to create a STFT module
@@ -119,7 +116,7 @@ class STFT(U.NewModule):
     def clear(self):
         pass
 
-def callbackClass(nameInput='../sounds/sine.wav', frameSize=3071, zeroPadding=1025, hopSize=2048, fftshift=True,
+def callbackClass(nameInput='AudioDSP/sounds/sine.wav', frameSize=3071, zeroPadding=1025, hopSize=2048, fftshift=True,
                   windowType='hann'):
 
     #Loading audio

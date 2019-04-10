@@ -17,12 +17,9 @@
  version 3 along with PV.  If not, see http://www.gnu.org/licenses/
 '''
 
-import os, sys
 import numpy as np
-import matplotlib.pyplot as plt
-
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
+from AudioDSP import utils as U
+from AudioDSP.visualization import visualization as V
 
 class Param_OverlapAdd(U.NewParam):
     def __init__(self, frameSize=4096, hopSize=2048):
@@ -90,8 +87,7 @@ def main():
 
     y = OLA.process(x)
 
-    plt.plot(y)
-    plt.show()
+    V.visualization_TD(y, 1, 'Test', yNormalization=False)
     
 if __name__ == '__main__':
     main()

@@ -18,19 +18,13 @@
 '''
 import sys, os
 import numpy as np
-from scipy.ndimage import median_filter
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../spectrogram/'))
-import STFT
-import ISTFT
+from AudioDSP import utils as U
+from AudioDSP.spectrogram import STFT, ISTFT
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
-import visualization as V
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../utils/'))
-import median_filtering as MF
+from AudioDSP.visualization import visualization as V
+from AudioDSP.HPSS import median_filtering as MF
 
-import matplotlib.pyplot as plt
-
+# Todo: the HPSS class is not working right now! Fix it!
 
 class Param_HPSS(U.NewParam):
     #Class that contains the parameters to create a STFT module

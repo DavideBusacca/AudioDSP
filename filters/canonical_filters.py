@@ -1,9 +1,7 @@
-import sys, os
 import numpy as np
-import utilsFilter as UF
-import zplane as Z
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
-import visualization as V
+from AudioDSP.filters import utilsFilter as UF
+from AudioDSP.filters import zplane as Z
+from AudioDSP.visualization import visualization as V
 
 def CanonicalFilter_FirstOrder(K, type):
     '''

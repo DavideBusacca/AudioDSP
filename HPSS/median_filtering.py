@@ -1,7 +1,7 @@
 '''
  Copyright (C) 2018  Busacca Davide
 
- This file is part of AudioDSP-Python.
+ This file is part of AudioDSP.
 
  PV is free software: you can redistribute it and/or modify it under
  the terms of the GNU Affero General Public License as published by the Free
@@ -24,6 +24,8 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import time
+
+# TODO: make test on an audio file and not on a random matrix
 
 '''
 Two versions of the median filters for computing the percussive/harmonic enhanced spectrograms for HPSS.

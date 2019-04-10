@@ -1,7 +1,7 @@
 '''
  Copyright (C) 2018  Busacca Davide
 
- This file is part of AudioDSP-Python.
+ This file is part of AudioDSP.
 
  PV is free software: you can redistribute it and/or modify it under
  the terms of the GNU Affero General Public License as published by the Free
@@ -17,17 +17,13 @@
  version 3 along with PV.  If not, see http://www.gnu.org/licenses/
 '''
 
-import sys, os
 import essentia.standard as ess
 from essentia import array as essarray
-import median_filtering as MF
 import numpy as np
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../spectrogram/'))
-import STFT
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
-import visualization as V
+from AudioDSP.spectrogram import STFT
+from AudioDSP.HPSS import median_filtering as MF
+from AudioDSP import utils as U
+from AudioDSP.visualization import visualization as V
 
 '''
 Implementation of Harmonic Percussive Source Separation algorithm using Median Filtering.
@@ -203,7 +199,7 @@ def visualize_HPSS(x, fs, y_harm, y_perc):
 
 
 
-def main(nameInput='../sounds/piano.wav', fs = 44100, kernel = (17, 17), margin = (1, 1), power=np.inf,
+def main(nameInput='AudioDSP/sounds/piano.wav', fs = 44100, kernel = (17, 17), margin = (1, 1), power=np.inf,
          hopSize=512, frameSize=2048, zeroPadding=0, windowType='hann'):
 
     x = ess.MonoLoader(filename=nameInput, sampleRate=fs)()

@@ -17,15 +17,11 @@
  version 3 along with PV.  If not, see http://www.gnu.org/licenses/
 '''
 
-import os, sys
 import numpy as np
 from scipy.fftpack import ifft
-import STFT
-import OverlapAdd
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../visualization'))
-import visualization as V
+from AudioDSP.spectrogram import STFT, OverlapAdd
+from AudioDSP import utils as U
+from AudioDSP.visualization import visualization as V
 
 # Param_ISTFT not necessary. Use Param_STFT.
 
@@ -132,7 +128,8 @@ class ISTFT(U.NewModule):
         self.OLA.clear()
         self.OLA_ow.clear()
 
-def callback(nameInput='../sounds/sine.wav', nameOutput='processed/sine_STFT.wav', frameSize=3071, zeroPadding=1025, hopSize=256, windowType='hann', fftshift=True):
+def callback(nameInput='AudioDSP/sounds/sine.wav', nameOutput='AudioDSP/spectrogram/processed/sine_STFT.wav',
+             frameSize=3071, zeroPadding=1025, hopSize=256, windowType='hann', fftshift=True):
 
     # Loading audio
     x, fs = U.wavread(nameInput)

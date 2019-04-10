@@ -17,12 +17,9 @@
  version 3 along with PV.  If not, see http://www.gnu.org/licenses/
 '''
 
-import sys, os
 import numpy as np
-import matplotlib.pyplot as plt
-
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
+from AudioDSP import utils as U
+from AudioDSP.visualization import visualization as V
 
 def overlap_add(x, alpha=1.5, Hs=512, frameSize=2048, normalization=True, windowType='hann'):
     '''
@@ -57,7 +54,7 @@ def overlap_add(x, alpha=1.5, Hs=512, frameSize=2048, normalization=True, window
     return y
         
 
-def callback(nameInput='../sounds/piano.wav', nameOutput='processed/piano_OLA.wav', alpha=1.5, Hs=2048, frameSize=8192, normalization=True, windowType='hann'):
+def callback(nameInput='AudioDSP/sounds/piano.wav', nameOutput='AudioDSP/TS/processed/piano_OLA.wav', alpha=1.5, Hs=2048, frameSize=8192, normalization=True, windowType='hann'):
     #Loading audio
     x, fs = U.wavread(nameInput)
     
@@ -67,18 +64,10 @@ def callback(nameInput='../sounds/piano.wav', nameOutput='processed/piano_OLA.wa
     #Writing audio output
     U.wavwrite(y, fs, nameOutput)   
 
-    #Plotting 
-    fig = plt.figure(figsize=(15, 15), dpi= 80, facecolor='w', edgecolor='k')
-    fig.canvas.set_window_title('Original and Time-Stretched Signals')
-    
-    tmp = fig.add_subplot(2,1,1)
-    tmp.plot(U.getTimeAxis(x, fs), x)
-    tmp.set_title('Original Signal')
-    tmp = fig.add_subplot(2,1,2)
-    tmp.plot(U.getTimeAxis(y, fs), y)
-    tmp.set_title('Time-Stretched Signal (OLA)')
-    
-    plt.show()
+    #Plotting
+    fig = V.createFigure(title='Original and Time-Stretched Signals')
+    V.visualization_TD(x, fs, 'Original Signal', subplot=fig.add_subplot(2, 1, 1), show=False)
+    V.visualization_TD(y, fs, 'Time-Stretched Signal (OLA)', subplot=fig.add_subplot(2, 1, 2))
     
 if __name__ == "__main__":
     callback()

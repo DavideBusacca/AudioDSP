@@ -5,9 +5,7 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from scipy.signal import freqz
 from scipy.signal import tf2zpk as scipy_tf2zpk
-
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../'))
-import utils as U
+from AudioDSP import utils as U
 
 def plotFilterFreqResponse(numerator, denominator=1, name=None, subplot=None, show=True):
     if name == None:
